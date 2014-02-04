@@ -9,11 +9,10 @@
     <link rel="stylesheet" href="/css/normalize.css" />
     <link rel="stylesheet" href="/css/puls4.css" />
 
+    {% if env === "dev" %}
     <script src="/js/vendor/jquery-2.0.3.js"></script>
-    <!--Dependencia de Backbone-->
     <script src="/js/vendor/underscore.js"></script>
     <script src="/js/vendor/backbone.js"></script>
-    <!--Sistema de templates extras-->
     <script src="/js/vendor/swig.js"></script>
 
     <script src="/js/vendor/socket.io.js"></script>
@@ -28,9 +27,12 @@
     <script src="/js/backbone/models/article.js"></script>
     <script src="/js/backbone/collections/articles.js"></script>
     <script src="/js/backbone/views/article-view.js"></script>
-        <script src="/js/backbone/views/app.js"></script>
+    <script src="/js/backbone/views/app.js"></script>
+
+    <script src="/js/backbone/routers/base.js"></script>
 
     <script src="/js/main.js"></script>
+    {% endif %}
 </head>
 <body>
     <header>
@@ -71,14 +73,14 @@
             <li><a href="#">CSS3</a></li>
         </ul>
     </nav>
-    <form action="">
+    <form action="" id="nuevaPublicacion">
         <p>
             <label for="titulo">Titulo</label>
             <input type="text" id="titulo" name="titulo" required>
         </p>
         <p>
-            <label for="autor">Autor</label>
-            <input type="text" id="autor" name="autor" required>
+            <label for="user">Autor</label>
+            <input type="text" id="autor" name="user" required>
         </p>
         <p>
             <label for="tag">Tag</label>
@@ -86,62 +88,107 @@
             <span class="anotacion"> *Separados por comas</span>
         </p>
         <input type="submit" value="Publicar">
-    </form>
+    </form>    
     <section class="posts">
-        
+
     </section>
     <footer>
         <h3>
             <strong>Powered by DevSolutions</strong>
             <span class="mejor">
-                DevSolutions 2014
+                DevSolutions 2013
             </span>
         </h3>
     </footer>
-    <!--raw es para que el backend no procese los templates de la vista-->
     {%raw%}
     <script type="text/template" id="article-template">
-            <div class="descripcion">
-                <figure class="imagen">
-                    <img src="{{image}}" />
-                </figure>
-                <div class="detalles">
-                    <h2 class="titulo">
-                       {{title}}
-                    </h2>
-                    <p class="autor">
-                        por <a href="#">{{user}}</a>
-                    </p>
-                    {% for tag in tags%}
-                        <a class="tag" href="#">{{tag}}</a>
-                    {%endfor%}
-                    <p class="fecha">hace <strong>20</strong> min</p>
-                </div>
+        <div class="descripcion">
+            <figure class="imagen">
+                <img src="{{image}}" />
+            </figure>
+            <div class="detalles">
+                <h2 class="titulo">
+                   {{title}}
+                </h2>
+                <p class="autor">
+                    por <a href="#">{{user}}</a>
+                </p>
+                {% for tag in tags%}
+                    <a class="tag" href="#">{{tag}}</a>
+                {%endfor%}
+                <p class="fecha">hace <strong>20</strong> min</p>
             </div>
-            <div class="acciones">
-                <div class="votos">
-                    <a class="up" href="#"></a>
-                    <span class="total">{{votes}}</span>
-                    <a class="down" href="#"></a>
-                </div>
-                <div class="datos">
-                    <a class="comentarios" href="#">
-                        10
-                    </a>
-                    <a class="estrellita" href="#"></a>
-                </div>
+        </div>
+        <div class="acciones">
+            <div class="votos">
+                <a class="up" href="#"></a>
+                <span class="total">{{votes}}</span>
+                <a class="down" href="#"></a>
             </div>
+            <div class="datos">
+                <a class="ncomentarios" href="#">
+                    {{comments.length()}}
+                </a>
+                <a class="estrellita" href="#"></a>
+            </div>
+        </div>
+    </script>
+    <script type ="text/template" id="article-extended-template">
+        <div class="descripcion extended">
+            <figure class="imagen">
+                <img src="{{image}}" />
+            </figure>
+            <div class="detalles">
+                <h2 class="titulo">
+                   {{title}}
+                </h2>
+                <p class="autor">
+                    por <a href="#">{{user}}</a>
+                </p>
+                <p>{% autoescape false %}
+                        {{content}}
+                    {% endautoescape %}
+                </p>
+                {% for tag in tags%}
+                    <a class="tag" href="#">{{tag}}</a>
+                {%endfor%}
+                <p class="fecha">hace <strong>20</strong> min</p>
+            </div>
+        </div>
+        <div class="acciones">
+            <div class="votos">
+                <a class="up" href="#"></a>
+                <span class="total">{{votes}}</span>
+                <a class="down" href="#"></a>
+            </div>
+            <div class="datos">
+                <a class="ncomentarios" href="#">
+                    {{comments.length()}}
+                </a>
+                <a class="estrellita" href="#"></a>
+            </div>
+        </div>
+
+        <section class="comentarios">
+            <form action="" id="nuevoComentario">
+                <input type="text" name="autor" placeholder="Nombre" required />
+                <input type="email" name="email" placeholder="E-mail" required />
+                <textarea name="comentario" maxlength="140" placeholder="Ingresa un comentario" required></textarea>
+                <input type="submit" value="Comentar">
+            </form>
+            {% for comment in comments%}
+                <div class="comentario">
+                    <p class="datosComentario"><span class="autorComentario">{{comment.autor}}</span> <span class="guionComentario">-</span> <span class="emailComentario">{{comment.email}}</span></p>
+                    <p class="contenidoComentario">{{comment.comentario}}</p>
+                </div>
+            {%endfor%}
+        </section>
     </script>
     {%endraw%}
+    {% if env === "prod" %}
+    <script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src ="/vendors.min.js"></script>
+    <script src="/app.min.js"></script>
+    {% endif %}
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

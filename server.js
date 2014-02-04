@@ -4,7 +4,7 @@ var express = require('express'),
 	fs      = require('fs'),
 	uuid    = require('node-uuid');
 
-var env = "dev";
+var env = "prod";
 
 var app      = express(),
 	baseData = fs.readFileSync('./base-data.json').toString(),
@@ -37,12 +37,14 @@ app.get('/articles/', function(req, res){
 
 app.post('/articles', function (req, res){
 	req.body.id = uuid.v1();
-	//req.body.votes = 0;
-	//req.body.image = "/imagenes/img3.jpg";
-	//req.body.user  = "Manuel";
+	req.body.votes = 0;
+	// req.body.image = "/img/img3.jpg";
+	// req.body.user  = "Siedrix";
+	var tags=req.body.tags.toString();
+	req.body.tags=tags.split(",");
 
 	data.push(req.body);
-	
+
 	console.log('articles::create', req.body);
 
 	io.sockets.emit('articles::create', req.body);
